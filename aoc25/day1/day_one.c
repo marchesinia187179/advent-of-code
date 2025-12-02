@@ -27,9 +27,10 @@ void restoreFilePointerIndicator(FILE *f, char const buf[BUFFER_SIZE]) {
 /* Decrements the dialPointer
  * If the pointer falls below the start of the cycle (DIAL_MIN_NUMBER),
  * it wraps around and resets to the end of the cycle (DIAL_MAX_NUMBER) */
-void leftCase(int *dialPointer, int rotation) {
+void leftCase(int *dialPointer, int rotation, int *zeroCount) {
     while (rotation) {
         (*dialPointer)--;
+        if (*dialPointer == 0) (*zeroCount)++;  // Code about the second part of the puzzle
         if (*dialPointer < DIAL_MIN_NUMBER) *dialPointer = DIAL_MAX_NUMBER;
         rotation--;
     }
@@ -38,15 +39,16 @@ void leftCase(int *dialPointer, int rotation) {
 /* Increments the dialPointer
  * If the pointer goes past the end of the cycle (DIAL_MAX_NUMBER),
  * it wraps around and resets to the beginning (DIAL_MIN_NUMBER) */
-void rightCase(int *dialPointer, int rotation) {
+void rightCase(int *dialPointer, int rotation, int *zeroCount) {
     while (rotation) {
         (*dialPointer)++;
         if (*dialPointer > DIAL_MAX_NUMBER) *dialPointer = 0;
+        if (*dialPointer == 0) (*zeroCount)++;  // Code about the second part of the puzzle
         rotation--;
     }
 }
 
-int getRotation(const char buf[BUFFER_SIZE]) {
+int getRotation(const char buf[BUFFER_SIZE], int *zeroCount) {
     int rotation = 0;
 
     // The for calculates the value of the rotation
@@ -57,6 +59,8 @@ int getRotation(const char buf[BUFFER_SIZE]) {
         if (c >= 0 && c <= 9) rotation = rotation * 10 + c;
         else break;
     }
+
+    *zeroCount += rotation / 100;   // Code about the second part of the puzzle
 
     // The dial operates on a cycle of 100 (0-99)
     // We use the modulus to determine the effective rotation
@@ -76,12 +80,14 @@ int day_one_main(char *fileName) {
     char buf[BUFFER_SIZE];
     while (fread(buf, sizeof(char), BUFFER_SIZE, f)) {
         // Get the rotation and set the dialPointer
-        int rotation = getRotation(buf);
-        if (buf[0] == 'L') leftCase(&dialPointer, rotation);
-        else rightCase(&dialPointer, rotation);
+        int rotation = getRotation(buf, &zeroCount);
+        if (buf[0] == 'L') leftCase(&dialPointer, rotation, &zeroCount);
+        else rightCase(&dialPointer, rotation, &zeroCount);
 
-        // Counting the zeros
-        if (dialPointer == 0) zeroCount++;
+        /* ATTENTION: this commented code refers to the first part of puzzle
+         * Counting the zeros
+         * if (dialPointer == 0) zeroCount++;
+         */
 
         restoreFilePointerIndicator(f, buf);
     }
