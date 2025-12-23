@@ -11,4 +11,6 @@ add_executable(aof25 main.c
         day3/day_three.c
         day3/day_three.h
         day4/day_four.c
-        day4/day_four.h)
+        day4/day_four.h
+        day5/day_five.c
+        day5/day_five.h)
